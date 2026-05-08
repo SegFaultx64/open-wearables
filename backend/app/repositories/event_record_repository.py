@@ -281,6 +281,9 @@ class EventRecordRepository(
         if getattr(query_params, "data_source_id", None):
             filters.append(EventRecord.data_source_id == query_params.data_source_id)
 
+        if getattr(query_params, "external_id", None):
+            filters.append(EventRecord.external_id == query_params.external_id)
+
         if query_params.start_datetime:
             filters.append(EventRecord.start_datetime >= query_params.start_datetime)
 

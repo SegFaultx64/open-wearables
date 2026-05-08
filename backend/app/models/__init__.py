@@ -20,6 +20,7 @@ from .user import User
 from .user_connection import UserConnection
 from .user_invitation_code import UserInvitationCode
 from .workout_details import WorkoutDetails
+from .activity_track import ActivityTrack
 
 __all__ = [
     "ApiKey",
@@ -40,6 +41,7 @@ __all__ = [
     "EventRecordDetail",
     "SleepDetails",
     "WorkoutDetails",
+    "ActivityTrack",
     "PersonalRecord",
     "DataPointSeries",
     "SeriesTypeDefinition",

@@ -20,6 +20,8 @@ class Workout(BaseModel):
     zone_offset: str | None = None
     duration_seconds: int | None = None
     source: SourceMetadata
+    external_id: str | None = None  # provider activity id, useful for bridges
+    has_track: bool = False
     calories_kcal: float | None = None
     distance_meters: float | None = None
     avg_heart_rate_bpm: int | None = None

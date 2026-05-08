@@ -683,6 +683,12 @@ class EventRecordService(
         for record, data_source in records:
             details: WorkoutDetails | None = record.detail if isinstance(record.detail, WorkoutDetails) else None
 
+            from app.models import ActivityTrack as _AT
+
+            has_track = bool(
+                db_session.query(_AT).filter(_AT.record_id == record.id).first()  # type: ignore[arg-type]
+            )
+
             workout = Workout(
                 id=record.id,
                 type=record.type or "unknown",
@@ -692,6 +698,8 @@ class EventRecordService(
                 zone_offset=record.zone_offset,
                 duration_seconds=record.duration_seconds,
                 source=self._map_source(data_source),
+                external_id=record.external_id,
+                has_track=has_track,
                 calories_kcal=float(details.energy_burned) if details and details.energy_burned else None,
                 distance_meters=float(details.distance) if details and details.distance else None,
                 avg_heart_rate_bpm=computed_hr.get(record.id),

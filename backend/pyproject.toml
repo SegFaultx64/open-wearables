@@ -28,6 +28,7 @@ dependencies = [
     "svix>=1.92.2",
     "numpy>=2.4.4",
     "faker>=40.13.0",
+    "fitparse>=1.2.0",
 ]
 
 [dependency-groups]

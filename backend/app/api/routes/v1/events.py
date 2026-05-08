@@ -25,6 +25,7 @@ def list_workouts(
     db: DbSession,
     _api_key: ApiKeyDep,
     record_type: str | None = None,
+    external_id: str | None = Query(None, description="Filter by provider external_id (e.g. garmin activityId)"),
     cursor: str | None = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> PaginatedResponse[Workout]:
@@ -35,6 +36,7 @@ def list_workouts(
         cursor=cursor,
         limit=limit,
         record_type=record_type,
+        external_id=external_id,
     )
     return event_record_service.get_workouts(db, user_id, params)
 

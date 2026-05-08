@@ -101,6 +101,7 @@ class EventRecordQueryParams(BaseModel):
     source_name: str | None = Field(None, description="Filter by source/app name")
     source: str | None = Field(None, description="Filter by data source")
     data_source_id: UUID | None = Field(None, description="Filter by data source identifier")
+    external_id: str | None = Field(None, description="Filter by provider external_id (e.g. garmin activityId)")
 
     # Duration filtering
     min_duration: int | None = Field(None, description="Minimum duration in seconds")
