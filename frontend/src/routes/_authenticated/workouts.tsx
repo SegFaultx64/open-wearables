@@ -4,13 +4,7 @@ import { Activity } from 'lucide-react';
 import { useUsers } from '@/hooks/api/use-users';
 import { WorkoutSection } from '@/components/user/workout-section';
 import { PageHeader } from '@/components/ui/page-header';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import type { DateRangeValue } from '@/components/ui/date-range-selector';
 
 export const Route = createFileRoute('/_authenticated/workouts')({
@@ -54,21 +48,24 @@ function WorkoutsPage() {
         </div>
       ) : users.length > 1 && !selectedUserId ? (
         <div className="space-y-3">
-          <label className="text-sm text-muted-foreground">User</label>
-          <Select onValueChange={setSelectedUserId}>
-            <SelectTrigger className="w-[320px]">
-              <SelectValue placeholder="Pick a user…" />
-            </SelectTrigger>
-            <SelectContent>
-              {users.map((u) => (
-                <SelectItem key={u.id} value={u.id}>
-                  {u.first_name || u.last_name
-                    ? `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim()
-                    : u.email ?? u.id.slice(0, 8)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <p className="text-sm text-muted-foreground">Choose a user:</p>
+          <div className="flex flex-wrap gap-2">
+            {users.map((u) => {
+              const label =
+                u.first_name || u.last_name
+                  ? `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim()
+                  : (u.email ?? u.id.slice(0, 8));
+              return (
+                <Button
+                  key={u.id}
+                  variant="outline"
+                  onClick={() => setSelectedUserId(u.id)}
+                >
+                  {label}
+                </Button>
+              );
+            })}
+          </div>
         </div>
       ) : activeUserId ? (
         <WorkoutSection
