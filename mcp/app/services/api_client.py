@@ -141,6 +141,35 @@ class OpenWearablesClient:
             params["record_type"] = record_type
         return await self._request("GET", f"/api/v1/users/{user_id}/events/workouts", params=params)
 
+    async def get_workout_track(
+        self,
+        user_id: str,
+        workout_id: str,
+        format: str = "geojson",
+    ) -> dict[str, Any]:
+        """Get the GPS track for a workout (defaults to GeoJSON)."""
+        return await self._request(
+            "GET",
+            f"/api/v1/users/{user_id}/events/workouts/{workout_id}/track",
+            params={"format": format},
+        )
+
+    async def get_workout_streams(
+        self,
+        user_id: str,
+        workout_id: str,
+        fields: str | None = None,
+    ) -> dict[str, Any]:
+        """Get per-sample sensor streams for a workout."""
+        params: dict[str, Any] = {}
+        if fields:
+            params["fields"] = fields
+        return await self._request(
+            "GET",
+            f"/api/v1/users/{user_id}/events/workouts/{workout_id}/streams",
+            params=params,
+        )
+
     async def get_activity_summaries(
         self,
         user_id: str,
