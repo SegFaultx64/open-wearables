@@ -16,7 +16,7 @@ function WorkoutsPage() {
     page: 1,
     limit: 100,
   });
-  const users = usersResp?.data ?? [];
+  const users = (usersResp as { items?: any[] } | undefined)?.items ?? [];
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRangeValue>(30);
 
