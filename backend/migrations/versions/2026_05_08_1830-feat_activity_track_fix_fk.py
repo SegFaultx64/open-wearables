@@ -1,7 +1,11 @@
-"""activity_track
+"""activity_track_fix_fk
 
-Revision ID: a4c1f1f10001
-Revises: d15dee848b33
+Drop and recreate activity_track so it FKs event_record (1:1) instead of
+event_record_detail. The previous migration linked it via event_record_detail's
+shared PK, which conflicted with workout_details rows.
+
+Revision ID: a4c1f1f10002
+Revises: a4c1f1f10001
 
 """
 
@@ -11,14 +15,13 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision: str = "a4c1f1f10001"
-down_revision: Union[str, None] = "d15dee848b33"
+revision: str = "a4c1f1f10002"
+down_revision: Union[str, None] = "a4c1f1f10001"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # If a previous migration created activity_track with the wrong FK, drop it.
     op.execute("DROP TABLE IF EXISTS activity_track CASCADE;")
     op.create_table(
         "activity_track",

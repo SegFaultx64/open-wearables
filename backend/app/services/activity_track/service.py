@@ -1,7 +1,6 @@
 """Service layer for activity tracks: ingest a FIT/GPX byte payload, persist as
-ActivityTrack rows under the matching event_record."""
+ActivityTrack rows linked to the matching event_record."""
 from decimal import Decimal
-from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select
@@ -75,7 +74,6 @@ def upsert_track_from_bytes(
     bbox = parsed.bbox or (None, None, None, None)
     track = ActivityTrack(
         record_id=event.id,
-        detail_type="track",
         sample_count=parsed.sample_count,
         distance_meters=Decimal(str(parsed.distance_meters)) if parsed.distance_meters is not None else None,
         bbox_min_lat=Decimal(str(bbox[0])) if bbox[0] is not None else None,
