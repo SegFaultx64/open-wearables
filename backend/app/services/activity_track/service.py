@@ -9,7 +9,7 @@ from sqlalchemy.exc import NoResultFound
 from app.database import DbSession
 from app.models import ActivityTrack, DataSource, EventRecord
 
-from .parser import ParsedTrack, parse_fit, parse_gpx
+from .parser import ParsedTrack, parse_fit, parse_gpx, parse_tcx
 
 
 class ActivityTrackNotFoundError(Exception):
@@ -21,12 +21,15 @@ def _detect_format(blob: bytes, hint: str | None) -> str:
         h = hint.lower()
         if h in ("fit", "gpx", "tcx"):
             return h
-    # FIT files start with a 12 or 14 byte header; second byte is protocol version
+    # FIT files start with a 12/14-byte header; magic ".FIT" lives at offset 8-12.
     if len(blob) > 12 and blob[8:12] == b".FIT":
         return "fit"
-    if blob.lstrip()[:5] == b"<?xml":
-        return "gpx"  # treat any xml as gpx for now (tcx parsing not yet supported)
-    raise ValueError("could not detect format; pass format=fit|gpx explicitly")
+    head = blob.lstrip()[:512]
+    if head[:5] == b"<?xml":
+        if b"TrainingCenterDatabase" in head:
+            return "tcx"
+        return "gpx"
+    raise ValueError("could not detect format; pass format=fit|gpx|tcx explicitly")
 
 
 def _resolve_event_record(db: DbSession, user_id: UUID, workout_id: UUID) -> EventRecord:
@@ -56,6 +59,8 @@ def upsert_track_from_bytes(
         parsed = parse_fit(blob)
     elif fmt == "gpx":
         parsed = parse_gpx(blob)
+    elif fmt == "tcx":
+        parsed = parse_tcx(blob)
     else:
         raise ValueError(f"unsupported format: {fmt}")
 

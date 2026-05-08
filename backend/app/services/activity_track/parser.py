@@ -114,6 +114,110 @@ def parse_fit(data: bytes) -> ParsedTrack:
     return parsed
 
 
+def parse_tcx(data: bytes) -> ParsedTrack:
+    """Parse a Garmin TCX (TrainingCenterDatabase XML) file.
+
+    Schema reference:
+      https://www8.garmin.com/xmlschemas/TrainingCenterDatabasev2.xsd
+    """
+    parsed = ParsedTrack(source_format="tcx")
+    root = ET.fromstring(data)
+    # default namespace
+    if root.tag.startswith("{"):
+        default_ns = root.tag.split("}")[0][1:]
+    else:
+        default_ns = ""
+    tcx = f"{{{default_ns}}}" if default_ns else ""
+    # TPX (per-point extension) namespace, used for Speed/Watts/RunCadence
+    tpx_ns_candidates = [
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2",
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v1",
+    ]
+
+    points: list[dict[str, Any]] = []
+    streams: dict[str, list[list[float]]] = {}
+    start_ts: float | None = None
+    last_distance: float | None = None
+
+    for tp in root.iter(f"{tcx}Trackpoint"):
+        time_el = tp.find(f"{tcx}Time")
+        ts: float | None = None
+        if time_el is not None and time_el.text:
+            try:
+                dt = datetime.fromisoformat(time_el.text.replace("Z", "+00:00"))
+                ts = dt.timestamp()
+                if start_ts is None:
+                    start_ts = ts
+                    parsed.start_time = dt
+            except ValueError:
+                pass
+        t = round((ts - start_ts), 3) if (ts is not None and start_ts is not None) else float(len(points))
+
+        pos = tp.find(f"{tcx}Position")
+        lat = lon = None
+        if pos is not None:
+            lat_el = pos.find(f"{tcx}LatitudeDegrees")
+            lon_el = pos.find(f"{tcx}LongitudeDegrees")
+            if lat_el is not None and lat_el.text:
+                lat = float(lat_el.text)
+            if lon_el is not None and lon_el.text:
+                lon = float(lon_el.text)
+
+        ele = None
+        ele_el = tp.find(f"{tcx}AltitudeMeters")
+        if ele_el is not None and ele_el.text:
+            ele = float(ele_el.text)
+
+        if lat is not None and lon is not None:
+            points.append({"t": t, "lat": lat, "lon": lon, "ele": ele})
+
+        hr_el = tp.find(f"{tcx}HeartRateBpm")
+        if hr_el is not None:
+            hr_val_el = hr_el.find(f"{tcx}Value")
+            if hr_val_el is not None and hr_val_el.text:
+                streams.setdefault("heart_rate", []).append([t, float(hr_val_el.text)])
+
+        cad_el = tp.find(f"{tcx}Cadence")
+        if cad_el is not None and cad_el.text:
+            streams.setdefault("cadence", []).append([t, float(cad_el.text)])
+
+        dist_el = tp.find(f"{tcx}DistanceMeters")
+        if dist_el is not None and dist_el.text:
+            try:
+                last_distance = float(dist_el.text)
+            except ValueError:
+                pass
+
+        # TPX extensions for speed/watts/run_cadence
+        for ext_root in tp.findall(f"{tcx}Extensions"):
+            for tpx_ns in tpx_ns_candidates:
+                for el in ext_root.iter(f"{{{tpx_ns}}}TPX"):
+                    for child in el:
+                        local = child.tag.rsplit("}", 1)[-1].lower()
+                        if not child.text:
+                            continue
+                        try:
+                            val = float(child.text)
+                        except ValueError:
+                            continue
+                        if local in ("speed",):
+                            streams.setdefault("speed", []).append([t, val])
+                        elif local in ("watts", "power"):
+                            streams.setdefault("power", []).append([t, val])
+                        elif local in ("runcadence",):
+                            streams.setdefault("cadence", []).append([t, val])
+
+    parsed.track_points = points
+    parsed.streams = streams
+    parsed.sample_count = len(points)
+    parsed.distance_meters = float(last_distance) if last_distance is not None else None
+    bbox, gain, loss = _bbox_and_elev(points)
+    parsed.bbox = bbox
+    parsed.elevation_gain_meters = gain
+    parsed.elevation_loss_meters = loss
+    return parsed
+
+
 def parse_gpx(data: bytes) -> ParsedTrack:
     parsed = ParsedTrack(source_format="gpx")
     ns = {"gpx": "http://www.topografix.com/GPX/1/1", "ns3": "http://www.garmin.com/xmlschemas/TrackPointExtension/v1"}
