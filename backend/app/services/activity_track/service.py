@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
 from app.database import DbSession
-from app.models import ActivityTrack, DataSource, EventRecord, EventRecordDetail, UserConnection
+from app.models import ActivityTrack, DataSource, EventRecord
 
 from .parser import ParsedTrack, parse_fit, parse_gpx
 
@@ -35,8 +35,7 @@ def _resolve_event_record(db: DbSession, user_id: UUID, workout_id: UUID) -> Eve
     stmt = (
         select(EventRecord)
         .join(DataSource, EventRecord.data_source_id == DataSource.id)
-        .join(UserConnection, DataSource.user_connection_id == UserConnection.id)
-        .where(EventRecord.id == workout_id, UserConnection.user_id == user_id)
+        .where(EventRecord.id == workout_id, DataSource.user_id == user_id)
     )
     try:
         return db.execute(stmt).scalar_one()
