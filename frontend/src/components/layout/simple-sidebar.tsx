@@ -2,6 +2,7 @@ import { Link, useLocation } from '@tanstack/react-router';
 import {
   Home,
   Users,
+  Activity,
   FileText,
   LogOut,
   Settings,
@@ -25,6 +26,11 @@ const menuItems = [
     title: 'Users',
     url: ROUTES.users,
     icon: Users,
+  },
+  {
+    title: 'Workouts',
+    url: ROUTES.workouts,
+    icon: Activity,
   },
   {
     title: 'Webhooks',

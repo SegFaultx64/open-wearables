@@ -16,6 +16,7 @@ import {
   useTimeSeries,
   useDeleteWorkout,
 } from '@/hooks/api/use-health';
+import { getWorkoutIcon } from '@/lib/utils/workout-icon';
 import { useCursorPagination } from '@/hooks/use-cursor-pagination';
 import {
   useDateRangeDates,
@@ -63,6 +64,7 @@ function WorkoutRow({
   const deleteWorkout = useDeleteWorkout(userId);
   const style = getWorkoutStyle(workout.type || workout.category || '');
   const category = getWorkoutCategory(workout.type || workout.category || '');
+  const Icon = getWorkoutIcon(workout.type || workout.category || '');
 
   // Get workout start and end times
   const startTime = workout.start_time || workout.start_datetime || '';
@@ -95,11 +97,11 @@ function WorkoutRow({
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full px-4 py-3 flex items-center gap-4 text-left"
       >
-        {/* Workout type emoji */}
+        {/* Workout type icon */}
         <div
-          className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl ${style.bgColor}`}
+          className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${style.bgColor}`}
         >
-          {style.emoji}
+          <Icon className="h-5 w-5 text-foreground/80" />
         </div>
 
         {/* Workout info */}
@@ -175,7 +177,9 @@ function WorkoutRow({
             <WorkoutTrack userId={userId} workoutId={workout.id} />
           )}
 
-          {/* Heart Rate During Workout Chart */}
+          {/* Heart Rate During Workout Chart — only when no FIT-derived
+              streams exist (otherwise WorkoutTrack already shows HR) */}
+          {!workout.has_track && (
           <div>
             <h4 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
               Heart Rate During Workout
@@ -231,6 +235,7 @@ function WorkoutRow({
               </p>
             )}
           </div>
+          )}
 
           {/* Detail Fields */}
           {detailFields.length > 0 && (
