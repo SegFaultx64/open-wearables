@@ -286,4 +286,44 @@ export const healthService = {
       API_ENDPOINTS.userSleepSessionDetail(userId, sessionId)
     );
   },
+
+  /**
+   * Get the GeoJSON GPS track for a workout (FIT/GPX/TCX-derived).
+   */
+  async getWorkoutTrack(
+    userId: string,
+    workoutId: string
+  ): Promise<{
+    type: 'Feature';
+    geometry: { type: 'LineString'; coordinates: number[][] };
+    properties: {
+      workout_id: string;
+      sample_count: number;
+      distance_meters: number | null;
+      elevation_gain_meters: number | null;
+      elevation_loss_meters: number | null;
+      source_format: string | null;
+    };
+  }> {
+    return apiClient.get(API_ENDPOINTS.workoutTrack(userId, workoutId), {
+      params: { format: 'geojson' },
+    });
+  },
+
+  /**
+   * Get per-sample sensor streams for a workout.
+   */
+  async getWorkoutStreams(
+    userId: string,
+    workoutId: string,
+    fields?: string
+  ): Promise<{
+    workout_id: string;
+    sample_count: number;
+    streams: Record<string, [number, number][]>;
+  }> {
+    return apiClient.get(API_ENDPOINTS.workoutStreams(userId, workoutId), {
+      params: fields ? { fields } : {},
+    });
+  },
 };

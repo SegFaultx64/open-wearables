@@ -32,6 +32,12 @@ export const API_ENDPOINTS = {
   userInvitationCode: (userId: string) =>
     `/api/v1/users/${userId}/invitation-code`,
 
+  // Activity track (FIT/GPX/TCX-derived GPS + sensor streams)
+  workoutTrack: (userId: string, workoutId: string) =>
+    `/api/v1/users/${userId}/events/workouts/${workoutId}/track`,
+  workoutStreams: (userId: string, workoutId: string) =>
+    `/api/v1/users/${userId}/events/workouts/${workoutId}/streams`,
+
   // OAuth endpoints
   oauthAuthorize: (provider: string) => `/api/v1/oauth/${provider}/authorize`,
   oauthCallback: (provider: string) => `/api/v1/oauth/${provider}/callback`,

@@ -42,6 +42,7 @@ import {
 } from '@/lib/utils/workout';
 import type { EventRecordResponse } from '@/lib/api/types';
 import { EventDeleteDialog } from '@/components/common/event-delete-dialog';
+import { WorkoutTrack } from '@/components/user/workout-track';
 
 interface WorkoutSectionProps {
   userId: string;
@@ -169,6 +170,11 @@ function WorkoutRow({
       {/* Expanded details */}
       {isExpanded && (
         <div className="px-4 pb-4 pt-2 border-t border-border/60 space-y-4">
+          {/* GPS track + per-sample streams (if FIT/GPX/TCX uploaded) */}
+          {workout.has_track && (
+            <WorkoutTrack userId={userId} workoutId={workout.id} />
+          )}
+
           {/* Heart Rate During Workout Chart */}
           <div>
             <h4 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">

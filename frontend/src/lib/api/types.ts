@@ -564,6 +564,11 @@ export interface EventRecordResponse {
   elevation_gain_meters?: number | null;
   avg_pace_sec_per_km?: number | null;
 
+  // Activity track (FIT/GPX/TCX) — present when an upload has populated
+  // /api/v1/users/{uid}/events/workouts/{wid}/track for this workout
+  external_id?: string | null;
+  has_track?: boolean;
+
   // Legacy fields (keeping for compatibility if needed, but marked optional)
   user_id?: string;
   provider_id?: string | null;

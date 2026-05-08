@@ -61,6 +61,35 @@ export function useWorkouts(userId: string, params?: WorkoutsParams) {
   });
 }
 
+/** Get the GPS track (GeoJSON) for a single workout. Lazy: pass enabled=false to defer. */
+export function useWorkoutTrack(
+  userId: string,
+  workoutId: string,
+  enabled: boolean = true
+) {
+  return useQuery({
+    queryKey: ['workout-track', userId, workoutId],
+    queryFn: () => healthService.getWorkoutTrack(userId, workoutId),
+    enabled: enabled && !!userId && !!workoutId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** Get per-sample sensor streams for a workout. Lazy: pass enabled=false to defer. */
+export function useWorkoutStreams(
+  userId: string,
+  workoutId: string,
+  fields?: string,
+  enabled: boolean = true
+) {
+  return useQuery({
+    queryKey: ['workout-streams', userId, workoutId, fields ?? 'all'],
+    queryFn: () => healthService.getWorkoutStreams(userId, workoutId, fields),
+    enabled: enabled && !!userId && !!workoutId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 /**
  * Get time series data for a user
  * Uses GET /api/v1/users/{user_id}/timeseries
